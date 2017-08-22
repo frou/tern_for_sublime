@@ -103,7 +103,7 @@ def get_description_message(useHTML, type, doc=None, url=None):
   if url is not None:
     message += " "
     if useHTML:
-      message += '<a href="{url}">[docs]</a>'.format(url=url)
+      message += '<a href="{url}">More</a>'.format(url=url)
     else:
       message += "\n\n" + url
   return message
