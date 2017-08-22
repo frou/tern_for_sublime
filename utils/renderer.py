@@ -37,9 +37,6 @@ def get_html_message_from_ftype(ftype, argpos):
       .hint-line-content {
         padding-bottom: 8px;
       }
-      .func-name {
-        font-weight: bold;
-      }
       .current-arg {
         color: #ff8000;
       }
@@ -52,7 +49,7 @@ def get_html_message_from_ftype(ftype, argpos):
     </style>
   '''
 
-  func_signature = '<span class="func-name">{func_name}</span>('.format(func_name=ftype["name"])
+  func_signature = '('
   i = 0
   for name, type in ftype["args"]:
     if i > 0: func_signature += ", "
