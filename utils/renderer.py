@@ -58,11 +58,11 @@ def get_html_message_from_ftype(ftype, argpos):
     else:
       func_signature += '<span class="arg-name">{name}</span>'.format(name=name)
     if type != "?":
-      func_signature += ': <span class="type">{type}</span>'.format(type=type)
+      func_signature += '<span class="type">: {type}</span>'.format(type=type)
     i += 1
   func_signature += ")"
   if ftype["retval"] is not None:
-    func_signature += '<span class="func-arrow"> ➜ </span><span class="type">{type}</span>'.format(type=ftype["retval"])
+    func_signature += '<span class="type">: {type}</span>'.format(type=ftype["retval"])
 
   template = '''
     {style}
