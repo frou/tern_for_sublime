@@ -37,6 +37,9 @@ def get_html_message_from_ftype(ftype, argpos):
       .hint-line-content {
         padding-bottom: 8px;
       }
+      .func-name {
+        font-weight: bold;
+      }
       .current-arg {
         color: #ff8000;
       }
@@ -44,7 +47,7 @@ def get_html_message_from_ftype(ftype, argpos):
         color: #60605a;
       }
       .doc {
-        color: #999999;
+        font-style: italic;
       }
     </style>
   '''
