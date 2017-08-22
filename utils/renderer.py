@@ -38,7 +38,7 @@ def get_html_message_from_ftype(ftype, argpos):
         padding-bottom: 8px;
       }
       .current-arg {
-        color: #ff8000;
+        text-decoration: underline;
       }
       .type {
         color: #60605a;
