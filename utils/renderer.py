@@ -32,27 +32,19 @@ def get_html_message_from_ftype(ftype, argpos):
   style = '''
     <style>
       .hint-popup {
-        padding-top: 10px;
-        font-size: 14px;
+        padding: 8px, 8px, 0px, 8px;
       }
       .hint-line-content {
-        padding-bottom: 10px;
-      }
-      .func-arrow {
-        font-size: 16px;
-      }
-      .arg-name {
-        color: #70a;
+        padding-bottom: 8px;
       }
       .current-arg {
-        font-weight: bold;
-        text-decoration: underline;
-      }
-      .doc {
-        font-style: italic;
+        color: #ff8000;
       }
       .type {
-        color: #07c;
+        color: #60605a;
+      }
+      .doc {
+        color: #999999;
       }
     </style>
   '''
