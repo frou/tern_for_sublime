@@ -68,8 +68,8 @@ def get_html_message_from_ftype(ftype, argpos):
     {style}
     <div class="hint-popup">
       <div class="hint-line func-signature">{func_signature}</div>
-      <div class="hint-line doc-link">{doc_link}</div>
       <div class="hint-line doc">{doc}</div>
+      <div class="hint-line doc-link">{doc_link}</div>
     </div>
   '''
 
@@ -79,7 +79,7 @@ def get_html_message_from_ftype(ftype, argpos):
   template_data = {
     'style': style,
     'func_signature': hint_line(func_signature),
-    'doc_link': hint_line(link(ftype['url'], '[docs]')),
+    'doc_link': hint_line(link(ftype['url'], 'More')),
     'doc': hint_line(doc)
   }
 
