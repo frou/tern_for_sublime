@@ -43,8 +43,8 @@ def get_html_message_from_ftype(ftype, argpos):
       .type {
         color: #60605a;
       }
-      .doc {
-        font-style: italic;
+      .doc, .doc-link {
+        font-family: sans-serif;
       }
     </style>
   '''
