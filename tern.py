@@ -365,21 +365,15 @@ def report_error(message, project):
     project.disabled = True
 
 def completion_icon(type):
-  if type is None or type == "?": return "\t? "
-  if type.startswith("fn("): return "\tfn "
-  if type.startswith("["): return "\t[] "
-  if type == "number": return "\tnum "
-  if type == "string": return "\tstr "
-  if type == "bool": return "\tbool "
-  return "\t{} "
-
-def fn_completion_icon(arguments, retval):
-  # return " (fn/"+str(len(arguments))+")"
-  ret = ""
-  if retval is not None:
-    ret = retval
-
-  return "(" + ", ".join(arguments) + ")" + ret + ("\tfn ")
+  # print(type)
+  if type is None: return ""
+  if type == "?": return type
+  if type.startswith("fn("): return "Function"
+  if type.startswith("["): return "Array"
+  if type == "number": return "Number"
+  if type == "string": return "String"
+  if type == "bool": return "Boolean"
+  return "Object"
 
 # create auto complete string from list arguments
 def create_arg_str(arguments):
@@ -388,7 +382,7 @@ def create_arg_str(arguments):
   arg_str = ""
   k = 1
   for argument in arguments:
-    arg_str += "${" + str(k) + ":" + argument.replace("$", "\$") + "}, "
+    arg_str += "${" + str(k) + ":" + argument.replace("$", "\\$") + "}, "
     k += 1
   return arg_str[0:-2]
 
@@ -435,26 +429,46 @@ def ensure_completions_cached(pfile, view):
   completions = []
   completions_arity = []
   for rec in data["completions"]:
+    # print(rec)
     rec_name = rec.get('name').replace('$', '\\$')
     rec_type = rec.get("type", None)
-    if arg_completion_enabled and rec_type is not None and rec_type.startswith("fn("):
-      retval = parse_function_type(rec).get('retval')
-
-      if retval is None or retval == "()":
-        retval = ""
-      elif retval.startswith("{"):
-        retval = "{}"
-      elif retval.startswith("["):
-        retval = "[]"
-
-      if retval != "":
-        retval = " -> " + retval
-
+    if rec_type is not None and rec_type.startswith("fn("):
       arguments = get_arguments(rec_type)
-      fn_name = rec_name + "(" + create_arg_str(arguments) + ")"
-      completions.append((rec.get("name") + fn_completion_icon(arguments, retval), fn_name))
+
+      fn_name = rec_name + " ("
+      if len(arguments) > 0:
+        fn_name += "…"
+      fn_name += ")"
+
+      category = "func"
+      hint = category.ljust(7) + " " + fn_name
+      typ = completion_icon(parse_function_type(rec).get('retval'))
+      if typ != "":
+        hint += "\t" + typ
+
+      replacement = rec_name + "("
+      if arg_completion_enabled:
+        placeholder_snippets = create_arg_str(arguments)
+        replacement += placeholder_snippets
+      else:
+        replacement += "$1"
+      replacement += ")"
+
+      completions.append((hint, replacement))
+
     else:
-      completions.append((rec.get("name") + completion_icon(rec_type), rec_name))
+      if rec.get("isKeyword"):
+        # Don't offer keywords as completions.
+        continue
+      category = "var"
+      hint = category.ljust(7) + " " + rec_name
+      typ = completion_icon(rec_type)
+      if typ != "":
+        hint += "\t" + typ
+
+      replacement = rec_name
+
+      completions.append((hint, replacement))
 
   # put the auto completions of functions with lower arity at the bottom of the autocomplete list
   # so they don't clog up the autocompeltions at the top of the list
