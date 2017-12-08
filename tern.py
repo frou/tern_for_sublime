@@ -28,10 +28,10 @@ def on_deactivated(view):
   if pfile and pfile.dirty:
     send_buffer(pfile, view)
 
-def on_selection_modified(view):
-  if not arghints_enabled: return
-  pfile = get_pfile(view)
-  if pfile is not None: show_argument_hints(pfile, view)
+# def on_selection_modified(view):
+#   if not arghints_enabled: return
+#   pfile = get_pfile(view)
+#   if pfile is not None: show_argument_hints(pfile, view)
 
 class Listeners(sublime_plugin.EventListener):
   def on_close(self, view):
@@ -47,11 +47,11 @@ class Listeners(sublime_plugin.EventListener):
     pfile = files.get(view.file_name(), None)
     if pfile: pfile_modified(pfile, view)
 
-  def on_selection_modified(self, view):
-    if is_st2: on_selection_modified(view)
+  # def on_selection_modified(self, view):
+  #   if is_st2: on_selection_modified(view)
 
-  def on_selection_modified_async(self, view):
-    on_selection_modified(view)
+  # def on_selection_modified_async(self, view):
+  #   on_selection_modified(view)
 
   def on_query_completions(self, view, prefix, _locations):
     sel = sel_start(view.sel()[0])
@@ -477,23 +477,24 @@ def ensure_completions_cached(pfile, view):
   return (completions, True)
 
 def locate_call(view):
-  sel = view.sel()[0]
-  if sel.a != sel.b: return (None, 0)
-  context = view.substr(sublime.Region(max(0, sel.b - 500), sel.b))
-  pos = len(context)
-  depth = argpos = 0
-  while pos > 0:
-    pos -= 1
-    ch = context[pos]
-    if ch == "}" or ch == ")" or ch == "]":
-      depth += 1
-    elif ch == "{" or ch == "(" or ch == "[":
-      if depth > 0: depth -= 1
-      elif ch == "(": return (pos + sel.b - len(context), argpos)
-      else: return (None, 0)
-    elif ch == "," and depth == 0:
-      argpos += 1
-  return (None, 0)
+  # Select the current identifier
+  view.run_command('move', {'by': 'wordends', 'forward': True})
+  view.run_command('move', {'by': 'words', 'forward': False, 'extend': True})
+  selection = view.sel()[0]
+
+  # Record the position that Tern considers a 'call':
+  #
+  # foo(
+  # ...^
+  retval = (selection.b, 0) # arg index 0 (doesn't matter for panel use)
+
+  # Leave the cursor at the start of the identifier, with no selection:
+  #
+  # foo(
+  # ^
+  view.run_command('move', {'by': 'characters', 'forward': False})
+
+  return retval
 
 def show_argument_hints(pfile, view):
   call_start, argpos = locate_call(view)
@@ -553,6 +554,22 @@ jump_stack = []
 class TernArghintCommand(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     self.view.insert(edit, 0, args.get('msg', ''))
+
+class TernShowDocInPanel(sublime_plugin.TextCommand):
+    def run(self, args):
+      view = self.view
+      window = view.window()
+
+      panel_name = "output.tern_arghint"
+
+      # if window.active_panel() == panel_name:
+      #   window.run_command("hide_panel", {"panel": panel_name})
+      # else:
+
+      pfile = get_pfile(view)
+      if pfile is not None:
+        show_argument_hints(pfile, view)
+        window.run_command("show_panel", {"panel": panel_name})
 
 class TernJumpToDef(sublime_plugin.TextCommand):
   def run(self, edit, **args):

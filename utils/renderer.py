@@ -221,7 +221,7 @@ class PanelRenderer(RendererBase):
   def _render_impl(self, pfile, view, message):
     panel = view.window().get_output_panel("tern_arghint")
     panel.run_command("tern_arghint", {"msg": message})
-    view.window().run_command("show_panel", {"panel": "output.tern_arghint"})
+    # view.window().run_command("show_panel", {"panel": "output.tern_arghint"})
 
   def _clean_impl(self, pfile, view):
     if pfile.showing_arguments:
