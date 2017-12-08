@@ -361,8 +361,9 @@ def send_buffer(pfile, view):
     return False
 
 def report_error(message, project):
-  if sublime.ok_cancel_dialog(message, "Disable Tern"):
-    project.disabled = True
+  # if sublime.ok_cancel_dialog(message, "Disable Tern"):
+  #   project.disabled = True
+  sublime.status_message("TERN ERROR: " + message)
 
 def completion_icon(type):
   # print(type)
