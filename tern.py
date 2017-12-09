@@ -3,14 +3,14 @@
 import sublime, sublime_plugin
 import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
 from subprocess import CalledProcessError
-try:
-  # python 2
-  from utils.renderer import create_renderer
-except:
-  from .utils.renderer import create_renderer
+
+from .utils.renderer import create_renderer
+
+import urllib.request, urllib.error
+opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 
 windows = platform.system() == "Windows"
-python3 = sys.version_info[0] > 2
 is_st2 = int(sublime.version()) < 3000
 
 def is_js_file(view):
@@ -253,35 +253,15 @@ class Req_Error(Exception):
 
 localhost = (windows and "127.0.0.1") or "localhost"
 
-def make_request_py2():
-  import urllib2
-  opener = urllib2.build_opener(urllib2.ProxyHandler({}))
-  def f(port, doc):
-    try:
-      req = opener.open("http://" + localhost + ":" + str(port) + "/", json.dumps(doc), 1)
-      return json.loads(req.read())
-    except urllib2.HTTPError as error:
-      raise Req_Error(error.read())
-  return f
-
-def make_request_py3():
-  import urllib.request, urllib.error
-  opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-  def f(port, doc):
-    try:
-      req = opener.open("http://" + localhost + ":" + str(port) + "/", json.dumps(doc).encode("utf-8"), 1)
-      return json.loads(req.read().decode("utf-8"))
-    except urllib.error.URLError as error:
-      if hasattr(error, "read"):
-        raise Req_Error(error.read().decode("utf-8"))
-      else:
-        raise error
-  return f
-
-if python3:
-  make_request = make_request_py3()
-else:
-  make_request = make_request_py2()
+def make_request(port, doc):
+  try:
+    req = opener.open("http://" + localhost + ":" + str(port) + "/", json.dumps(doc).encode("utf-8"), 1)
+    return json.loads(req.read().decode("utf-8"))
+  except urllib.error.URLError as error:
+    if hasattr(error, "read"):
+      raise Req_Error(error.read().decode("utf-8"))
+    else:
+      raise error
 
 def view_js_text(view):
   text, pos = ("", 0)
