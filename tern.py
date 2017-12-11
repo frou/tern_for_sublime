@@ -514,7 +514,20 @@ def parse_function_type(data):
           "args": args,
           "retval": retval}
 
-jump_stack = []
+jump_back_stack = []
+jump_forward_stack = []
+
+def encode_current_position(view):
+  row, col = view.rowcol(view.sel()[0].begin())
+  return view.file_name() + ":" + str(row + 1) + ":" + str(col + 1)
+
+def jump_stack_push(stack, view):
+  row, col = view.rowcol(view.sel()[0].begin())
+  encoded_pos = view.file_name() + ":" + str(row + 1) + ":" + str(col + 1)
+  stack.append(encoded_pos)
+  # print(stack)
+  if len(stack) > 32:
+    stack.pop(0)
 
 class TernArghintCommand(sublime_plugin.TextCommand):
   def run(self, edit, **args):
@@ -542,11 +555,8 @@ class TernJumpToDef(sublime_plugin.TextCommand):
     if data is None: return
     file = data.get("file", None)
     if file is not None:
-      # Found an actual definition
-      row, col = self.view.rowcol(self.view.sel()[0].b)
-      cur_pos = self.view.file_name() + ":" + str(row + 1) + ":" + str(col + 1)
-      jump_stack.append(cur_pos)
-      if len(jump_stack) > 50: jump_stack.pop(0)
+      jump_stack_push(jump_back_stack, self.view)
+      jump_forward_stack.clear()
       real_file = (os.path.join(get_pfile(self.view).project.dir, file) +
         ":" + str(data["start"]["line"] + 1) + ":" + str(data["start"]["ch"] + 1))
       sublime.active_window().open_file(real_file, sublime.ENCODED_POSITION)
@@ -559,8 +569,19 @@ class TernJumpToDef(sublime_plugin.TextCommand):
 
 class TernJumpBack(sublime_plugin.TextCommand):
   def run(self, edit, **args):
-    if len(jump_stack) > 0:
-      sublime.active_window().open_file(jump_stack.pop(), sublime.ENCODED_POSITION)
+    if len(jump_back_stack) > 0:
+      jump_stack_push(jump_forward_stack, self.view)
+      sublime.active_window().open_file(jump_back_stack.pop(), sublime.ENCODED_POSITION)
+    else:
+      sublime.status_message("TERN: NO EARLIER POSITION TO GO BACK TO")
+
+class TernJumpForward(sublime_plugin.TextCommand):
+  def run(self, edit, **args):
+    if len(jump_forward_stack) > 0:
+      jump_stack_push(jump_back_stack, self.view)
+      sublime.active_window().open_file(jump_forward_stack.pop(), sublime.ENCODED_POSITION)
+    else:
+      sublime.status_message("TERN: NO LATER POSITION TO GO FORWARD TO")
 
 class TernSelectVariable(sublime_plugin.TextCommand):
   def run(self, edit, **args):
