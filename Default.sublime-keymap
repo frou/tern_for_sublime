@@ -49,6 +49,7 @@
 
   // TODO(DH): Can the above commands be modified to establish history points
   // so that Sublime's stock jump_forward will play nicely with them?
+  // See Default/history_list.py
   {
     "keys": ["f12"],
     "command": "noop",
