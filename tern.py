@@ -585,9 +585,11 @@ class TernDescribe(sublime_plugin.TextCommand):
     data = run_command(self.view, {"type": "documentation"})
     if data is None:
       return
-    renderer.render_description(get_pfile(self.view), self.view,
-                                data["type"], data.get("doc", None),
-                                data.get("url", None))
+    # renderer.render_description(get_pfile(self.view), self.view,
+    #                             data["type"], data.get("doc", None),
+    #                             data.get("url", None))
+    self.view.window().show_input_panel(
+      "Type", data.get("type"), None, None, None)
 
 class TernDisableProject(sublime_plugin.TextCommand):
   def run(self, edit, **args):
