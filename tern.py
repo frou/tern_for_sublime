@@ -84,6 +84,8 @@ def get_pfile(view):
   if not is_js_file(view): return None
   fname = view.file_name()
   if fname is None:
+    # TODO(DH): Use a temp directory rather than a dir inside tern_for_sublime package? Create it in plugin_loaded?
+    # https://docs.python.org/3/library/tempfile.html
     fname = os.path.join(os.path.dirname(__file__), get_setting("tern_default_project_dir", "default_project_dir"), str(time.time()))
   if fname in files:
     pfile = files[fname]
@@ -604,7 +606,6 @@ class TernSelectVariable(sublime_plugin.TextCommand):
         regions.append(sublime.Region(ref["start"], ref["end"]))
     self.view.sel().clear()
     for r in regions: self.view.sel().add(r)
-
 
 class TernDescribe(sublime_plugin.TextCommand):
   def run(self, edit, **args):
