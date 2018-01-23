@@ -339,16 +339,21 @@ def completion_icon(type):
   if type == "bool": return "Boolean"
   return "Object"
 
-# create auto complete string from list arguments
+# create function argument list (including parenthesis) with internal snippets
+# to tab between argument placeholders.
 def create_arg_str(arguments):
   if len(arguments) ==  0:
-    return "${1}"
+    # Have the () itself be a snippet, to normalise the number of keyboard
+    # interactions to deal with the argument list. i.e. no matter the number of
+    # arguments, at least one tab press is required to advance beyond it.
+    return "${1:()}"
   arg_str = ""
   k = 1
   for argument in arguments:
     arg_str += "${" + str(k) + ":" + argument.replace("$", "\\$") + "}, "
     k += 1
-  return arg_str[0:-2]
+  arg_str = arg_str[0:-2] # truncate trailing separator
+  return "(" + arg_str + ")"
 
 # parse the type to get the arguments
 def get_arguments(type):
@@ -410,13 +415,12 @@ def ensure_completions_cached(pfile, view):
       if typ != "":
         hint += "\t" + typ
 
-      replacement = rec_name + "("
+      replacement = rec_name
       if arg_completion_enabled:
         placeholder_snippets = create_arg_str(arguments)
         replacement += placeholder_snippets
       else:
-        replacement += "$1"
-      replacement += ")"
+        replacement += "($1)"
 
       completions.append((hint, replacement))
 
