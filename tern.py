@@ -478,6 +478,7 @@ def show_argument_hints(pfile, view):
       parsed['doc'] = data.get('doc', None)
       pfile.cached_arguments = (call_start, parsed)
       render_argument_hints(pfile, view, parsed, argpos)
+      return
   sublime.status_message("TERN: CAN'T FIND DOCUMENTATION")
 
 def render_argument_hints(pfile, view, ftype, argpos):
