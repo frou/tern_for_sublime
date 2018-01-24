@@ -396,8 +396,9 @@ def ensure_completions_cached(pfile, view):
 
   data = run_command(
     view,
-    {"type": "completions", "types": True, "includeKeywords": False}
+    {"type": "completions", "types": True, "filter": False, "includeKeywords": False}
   )
+  # print(data)
   if data is None: return (None, False)
 
   completions = []
