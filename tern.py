@@ -394,7 +394,10 @@ def ensure_completions_cached(pfile, view):
       if slice.startswith(c_word) and not re.match(".*\\W", slice):
         return (c_completions, False)
 
-  data = run_command(view, {"type": "completions", "types": True, "includeKeywords": True})
+  data = run_command(
+    view,
+    {"type": "completions", "types": True, "includeKeywords": False}
+  )
   if data is None: return (None, False)
 
   completions = []
@@ -427,9 +430,6 @@ def ensure_completions_cached(pfile, view):
       completions.append((hint, replacement))
 
     else:
-      if rec.get("isKeyword"):
-        # Don't offer keywords as completions.
-        continue
       category = "var"
       hint = category.ljust(7) + " " + rec_name
       typ = completion_icon(rec_type)
