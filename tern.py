@@ -644,8 +644,6 @@ def get_setting(key, default):
   else:
     return new_settings.get(key, default)
 
-plugin_dir = os.path.abspath(os.path.dirname(__file__))
-
 def plugin_loaded():
   global arghints_enabled, renderer, tern_command, tern_arguments
   global arg_completion_enabled
@@ -661,28 +659,7 @@ def plugin_loaded():
   tern_arguments = get_setting("tern_arguments", [])
   if not isinstance(tern_arguments, list):
     tern_arguments = [tern_arguments]
-  tern_command = get_setting("tern_command", None)
-  if tern_command is None:
-    if not os.path.isdir(os.path.join(plugin_dir, "node_modules/tern")):
-      if sublime.ok_cancel_dialog(
-          "It appears Tern has not been installed. Do you want tern_for_sublime to try and install it? "
-          "(Note that this will only work if you already have node.js and npm installed on your system.)"
-          "\n\nTo get rid of this dialog, either uninstall tern_for_sublime, or set the tern_command setting.",
-          "Yes, install."):
-        try:
-          if hasattr(subprocess, "check_output"):
-            subprocess.check_output(["npm", "--loglevel=silent", "install"], cwd=plugin_dir, shell=windows)
-          else:
-            subprocess.check_call(["npm", "--loglevel=silent", "install"], cwd=plugin_dir, shell=windows)
-        except (IOError, OSError, CalledProcessError) as e:
-          msg = "Installation failed. Try doing 'npm install' manually in " + plugin_dir + "."
-          if hasattr(e, "output") and e.output is not None:
-            msg += "\nError message was:\n\n" + e.output
-          if hasattr(e, "returncode"):
-            msg += "\nReturn code was: " + str(e.returncode)
-          sublime.error_message(msg)
-          return
-    tern_command = ["node",  os.path.join(plugin_dir, "node_modules/tern/bin/tern"), "--no-port-file"]
+  tern_command = get_setting("tern_command", ["tern", "--no-port-file"])
 
 def cleanup():
   for f in files.values():
