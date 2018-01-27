@@ -632,17 +632,9 @@ class TernEnableProject(sublime_plugin.TextCommand):
     pfile = get_pfile(self.view)
     pfile.project.disabled = True
 
-# fetch a certain setting from the package settings file and if it doesn't exist check the
-# Preferences.sublime-settings file for backwards compatibility.
+# fetch a certain setting from the package settings file
 def get_setting(key, default):
-  old_settings = sublime.load_settings("Preferences.sublime-settings")
-  new_settings = sublime.load_settings("Tern.sublime-settings")
-
-  setting = new_settings.get(key, None)
-  if setting is None:
-    return old_settings.get(key, default)
-  else:
-    return new_settings.get(key, default)
+  return sublime.load_settings("Tern.sublime-settings").get(key, default)
 
 def plugin_loaded():
   global arghints_enabled, renderer, tern_command, tern_arguments
