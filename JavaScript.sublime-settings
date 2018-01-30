@@ -1,4 +1,4 @@
 {
-	// Characters that are considered to separate words
-    "word_separators": "./\\()\"'-:,.;<>~!@#%^&*|+=[]{}`~?"
+  // Copied from Default/Preferences.sublime-settings and with $ removed.
+  "word_separators": "./\\()\"'-:,.;<>~!@#%^&*|+=[]{}`~?"
 }
