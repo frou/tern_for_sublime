@@ -408,7 +408,9 @@ def ensure_completions_cached(pfile, view):
   completions_arity = []
   for rec in data["completions"]:
     # print(rec)
-    rec_name = rec.get('name').replace('$', '\\$')
+    rec_name = rec.get('name')
+    # To Sublime, dollars are related to snippet placeholders.
+    rec_name_escaped = rec_name.replace('$', '\\$')
     rec_type = rec.get("type", None)
     if rec_type is not None and rec_type.startswith("fn("):
       arguments = get_arguments(rec_type)
@@ -424,7 +426,7 @@ def ensure_completions_cached(pfile, view):
       if typ != "":
         hint += "\t" + typ
 
-      replacement = rec_name
+      replacement = rec_name_escaped
       if arg_completion_enabled:
         placeholder_snippets = create_arg_str(arguments)
         replacement += placeholder_snippets
@@ -440,7 +442,7 @@ def ensure_completions_cached(pfile, view):
       if typ != "":
         hint += "\t" + typ
 
-      replacement = rec_name
+      replacement = rec_name_escaped
 
       completions.append((hint, replacement))
 
