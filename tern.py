@@ -4,7 +4,7 @@ import sublime, sublime_plugin
 import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
 from subprocess import CalledProcessError
 
-from .utils.renderer import create_renderer
+from .renderer import create_renderer
 
 import urllib.request, urllib.error
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
