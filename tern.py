@@ -9,6 +9,8 @@ from .utils.renderer import create_renderer
 import urllib.request, urllib.error
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
+import tempfile
+
 windows = platform.system() == "Windows"
 
 def is_js_file(view):
@@ -84,9 +86,7 @@ def get_pfile(view):
   if not is_js_file(view): return None
   fname = view.file_name()
   if fname is None:
-    # TODO(DH): Use a temp directory rather than a dir inside tern_for_sublime package? Create it in plugin_loaded?
-    # https://docs.python.org/3/library/tempfile.html
-    fname = os.path.join(os.path.dirname(__file__), get_setting("tern_default_project_dir", "default_project_dir"), str(time.time()))
+    fname = os.path.join(tempfile.gettempdir(), "tfs_%s" % time.time())
   if fname in files:
     pfile = files[fname]
     if pfile.project.disabled: return None
