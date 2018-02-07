@@ -17,8 +17,8 @@
                         "command": "tern_jump_back"
                     },
                     {
-                        "caption": "Select all references",
-                        "command": "tern_select_variable"
+                        "caption": "Jump forward",
+                        "command": "tern_jump_forward"
                     },
                     {
                         "caption": "Describe",
