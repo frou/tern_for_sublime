@@ -607,17 +607,6 @@ class TernDescribe(sublime_plugin.TextCommand):
     self.view.window().show_input_panel(
       "Type", data.get("type"), None, None, None)
 
-# TODO(DH): Get rid off all enable/disable project stuff.
-class TernDisableProject(sublime_plugin.TextCommand):
-  def run(self, edit, **args):
-    pfile = get_pfile(self.view)
-    pfile.project.disabled = True
-
-class TernEnableProject(sublime_plugin.TextCommand):
-  def run(self, edit, **args):
-    pfile = get_pfile(self.view)
-    pfile.project.disabled = True
-
 # fetch a certain setting from the package settings file
 def get_setting(key, default):
   return sublime.load_settings("Tern.sublime-settings").get(key, default)
