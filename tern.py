@@ -228,14 +228,8 @@ def sel_end(sel):
 localhost = (windows and "127.0.0.1") or "localhost"
 
 def make_request(port, doc):
-  try:
-    req = opener.open("http://" + localhost + ":" + str(port) + "/", json.dumps(doc).encode("utf-8"), 1)
-    return json.loads(req.read().decode("utf-8"))
-  except urllib.error.URLError as error:
-    if hasattr(error, "read"):
-      raise Req_Error(error.read().decode("utf-8"))
-    else:
-      raise error
+  req = opener.open("http://" + localhost + ":" + str(port) + "/", json.dumps(doc).encode("utf-8"), 1)
+  return json.loads(req.read().decode("utf-8"))
 
 def view_js_text(view):
   text, pos = ("", 0)
