@@ -21,8 +21,8 @@
                         "command": "tern_jump_forward"
                     },
                     {
-                        "caption": "Describe",
-                        "command": "tern_describe"
+                        "caption": "Show Type",
+                        "command": "tern_show_type"
                     }
                 ]
             }

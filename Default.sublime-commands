@@ -12,7 +12,7 @@
     "command": "tern_jump_forward"
   },
   {
-    "caption": "tern_for_sublime: Describe",
-    "command": "tern_describe"
+    "caption": "tern_for_sublime: Show Type",
+    "command": "tern_show_type"
   }
 ]

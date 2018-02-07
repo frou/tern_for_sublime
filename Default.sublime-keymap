@@ -13,7 +13,7 @@
 
   {
     "keys": ["shift+f9"],
-    "command": "tern_describe",
+    "command": "tern_show_type",
     "context": [
       {
         "key": "selector",

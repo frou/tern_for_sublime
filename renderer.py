@@ -90,29 +90,6 @@ def get_html_message_from_ftype(ftype, argpos):
   return template.format(**template_data)
 
 
-def get_description_message(useHTML, type, doc=None, url=None):
-  """Get the message to display for Describe commands.
-
-  If useHTML is True, the message will be formatted with HTML tags.
-  """
-
-  message = type
-  if useHTML:
-    message = "<strong>{type}</strong>".format(type=message)
-  if doc is not None:
-    if useHTML:
-      message += " — " + cgi.escape(doc)
-    else:
-      message += "\n\n" + format_doc(doc)
-  if url is not None:
-    message += " "
-    if useHTML:
-      message += '<a href="{url}">More</a>'.format(url=url)
-    else:
-      message += "\n\n" + url
-  return message
-
-
 def maybe(fn):
   def maybe_fn(arg, *args, **kwargs):
     return fn(arg, *args, **kwargs) if arg else ''
@@ -172,12 +149,6 @@ class RendererBase(object):
       message = get_html_message_from_ftype(ftype, argpos)
     else:
       message = get_message_from_ftype(ftype, argpos)
-    self._render_message(pfile, view, message)
-
-  def render_description(self, pfile, view, type, doc=None, url=None):
-    """Render description."""
-
-    message = get_description_message(self.useHTML, type, doc, url)
     self._render_message(pfile, view, message)
 
   def clean(self, pfile, view):

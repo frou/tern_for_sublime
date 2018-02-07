@@ -519,6 +519,7 @@ def jump_stack_push(stack, view):
   if len(stack) > 32:
     stack.pop(0)
 
+# TODO(DH): Remove all 'hint' related stuff?
 class TernArghintCommand(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     self.view.insert(edit, 0, args.get('msg', ''))
@@ -573,14 +574,11 @@ class TernJumpForward(sublime_plugin.TextCommand):
     else:
       sublime.status_message("TERN: NO LATER POSITION TO GO FORWARD TO")
 
-class TernDescribe(sublime_plugin.TextCommand):
+class TernShowType(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     data = run_command(self.view, {"type": "documentation"})
     if data is None:
       return
-    # renderer.render_description(get_pfile(self.view), self.view,
-    #                             data["type"], data.get("doc", None),
-    #                             data.get("url", None))
     self.view.window().show_input_panel(
       "Type", data.get("type"), None, None, None)
 
