@@ -12,10 +12,6 @@
     "command": "tern_jump_forward"
   },
   {
-    "caption": "tern_for_sublime: Select Variable",
-    "command": "tern_select_variable"
-  },
-  {
     "caption": "tern_for_sublime: Describe",
     "command": "tern_describe"
   },

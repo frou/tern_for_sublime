@@ -596,23 +596,6 @@ class TernJumpForward(sublime_plugin.TextCommand):
     else:
       sublime.status_message("TERN: NO LATER POSITION TO GO FORWARD TO")
 
-class TernSelectVariable(sublime_plugin.TextCommand):
-  def run(self, edit, **args):
-    data = run_command(self.view, "refs", fragments=False)
-    if data is None: return
-    file = relative_file(get_pfile(self.view))
-    shown_error = False
-    regions = []
-    for ref in data["refs"]:
-      if ref["file"].replace('\\','/') != file.replace('\\','/'):
-        if not shown_error:
-          sublime.error_message("Not all uses of this variable are file-local. Selecting only local ones.")
-          shown_error = True
-      else:
-        regions.append(sublime.Region(ref["start"], ref["end"]))
-    self.view.sel().clear()
-    for r in regions: self.view.sel().add(r)
-
 class TernDescribe(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     data = run_command(self.view, {"type": "documentation"})
@@ -624,6 +607,7 @@ class TernDescribe(sublime_plugin.TextCommand):
     self.view.window().show_input_panel(
       "Type", data.get("type"), None, None, None)
 
+# TODO(DH): Get rid off all enable/disable project stuff.
 class TernDisableProject(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     pfile = get_pfile(self.view)

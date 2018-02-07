@@ -57,17 +57,5 @@
         "operand": "source.js"
       }
     ]
-  },
-
-  // {
-  //   "keys": ["alt+space"],
-  //   "command": "tern_select_variable",
-  //   "context": [
-  //     {
-  //       "key": "selector",
-  //       "operator": "equal",
-  //       "operand": "source.js"
-  //     }
-  //   ]
-  // },
+  }
 ]
