@@ -76,7 +76,6 @@ class Project(object):
     self.port = None
     self.proc = None
     self.last_failed = 0
-    self.disabled = False
 
   def __del__(self):
     kill_server(self)
@@ -88,9 +87,7 @@ def get_pfile(view):
   if fname is None:
     fname = os.path.join(tempfile.gettempdir(), "tfs_%s" % time.time())
   if fname in files:
-    pfile = files[fname]
-    if pfile.project.disabled: return None
-    return pfile
+    return files[fname]
 
   pdir = project_dir(fname)
   if pdir is None: return None
@@ -100,9 +97,7 @@ def get_pfile(view):
     if f.project.dir == pdir:
       project = f.project
       break
-  if project is None: project = Project(pdir)
-  pfile = files[fname] = ProjectFile(fname, view, project)
-  if project.disabled: return None
+  pfile = files[fname] = ProjectFile(fname, view, project or Project(pdir))
   return pfile
 
 def project_dir(fname):
@@ -230,12 +225,6 @@ def sel_start(sel):
 def sel_end(sel):
   return max(sel.a, sel.b)
 
-class Req_Error(Exception):
-  def __init__(self, message):
-    self.message = message
-  def __str__(self):
-    return self.message
-
 localhost = (windows and "127.0.0.1") or "localhost"
 
 def make_request(port, doc):
@@ -256,14 +245,14 @@ def view_js_text(view):
     pos = region.b
   return text
 
-def run_command(view, query, pos=None, fragments=True, silent=False):
+def run_command(view, query, pos=None, fragments=True):
   """Run the query on the Tern server.
 
   See default queries at http://ternjs.net/doc/manual.html#protocol.
   """
 
   pfile = get_pfile(view)
-  if pfile is None or pfile.project.disabled: return
+  if pfile is None: return
 
   if isinstance(query, str): query = {"type": query}
   if (pos is None): pos = view.sel()[0].b
@@ -294,9 +283,7 @@ def run_command(view, query, pos=None, fragments=True, silent=False):
   data = None
   try:
     data = make_request(port, doc)
-  except Req_Error as e:
-    if not silent: report_error(str(e), pfile.project)
-    return None
+    if data is None: return None
   except:
     pass
 
@@ -307,7 +294,7 @@ def run_command(view, query, pos=None, fragments=True, silent=False):
       data = make_request(port, doc)
       if data is None: return None
     except Exception as e:
-      if not silent: report_error(str(e), pfile.project)
+      sublime.error_message(str(e))
 
   if sending_file: pfile.dirty = False
   return data
@@ -319,16 +306,12 @@ def send_buffer(pfile, view):
     make_request(port,
                  {"files": [{"type": "full",
                              "name": relative_file(pfile),
-                             "text": view_js_text(view)}]})
+                             "text": view_js_text(view)}]}
+    )
     pfile.dirty = False
     return True
   except:
     return False
-
-def report_error(message, project):
-  # if sublime.ok_cancel_dialog(message, "Disable Tern"):
-  #   project.disabled = True
-  sublime.status_message("TERN ERROR: " + message)
 
 def completion_icon(type):
   # print(type)
@@ -478,7 +461,7 @@ def show_argument_hints(pfile, view):
   if pfile.cached_arguments is not None and pfile.cached_arguments[0] == call_start:
     return render_argument_hints(pfile, view, pfile.cached_arguments[1], argpos)
 
-  data = run_command(view, {"type": "type", "preferFunction": True}, call_start, silent=True)
+  data = run_command(view, {"type": "type", "preferFunction": True}, call_start)
   if data is not None:
     parsed = parse_function_type(data)
     if parsed is not None:
