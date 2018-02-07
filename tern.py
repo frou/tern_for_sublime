@@ -584,7 +584,7 @@ class TernShowType(sublime_plugin.TextCommand):
 
 # fetch a certain setting from the package settings file
 def get_setting(key, default):
-  return sublime.load_settings("Tern.sublime-settings").get(key, default)
+  return sublime.load_settings("tern_for_sublime.sublime-settings").get(key, default)
 
 def plugin_loaded():
   global arghints_enabled, renderer, tern_command, tern_arguments

@@ -48,14 +48,14 @@
                                 "caption": "Settings – Default",
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/tern_for_sublime/Tern.sublime-settings"
+                                    "file": "${packages}/tern_for_sublime/tern_for_sublime.sublime-settings"
                                 }
                             },
                             {
                                 "caption": "Settings – User",
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/User/Tern.sublime-settings"
+                                    "file": "${packages}/User/tern_for_sublime.sublime-settings"
                                 }
                             },
                             {
@@ -72,7 +72,7 @@
                                 "caption": "Key Bindings – User",
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/User/Tern.sublime-keymap"
+                                    "file": "${packages}/User/tern_for_sublime.sublime-keymap"
                                 }
                             }
                         ]
