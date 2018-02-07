@@ -80,7 +80,6 @@ class Project(object):
   def __del__(self):
     kill_server(self)
 
-
 def get_pfile(view):
   if not is_js_file(view): return None
   fname = view.file_name()
@@ -519,12 +518,12 @@ def jump_stack_push(stack, view):
   if len(stack) > 32:
     stack.pop(0)
 
-# TODO(DH): Remove all 'hint' related stuff? It's a but intertwined with my TernShowDocInPanel command. If I pick those apart, renderer.py can be deleted completely?
+# TODO(DH): Remove all 'hint' related stuff? It's a but intertwined with my TernShowDocumentation command. If I pick those apart, renderer.py can be deleted completely?
 class TernArghintCommand(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     self.view.insert(edit, 0, args.get('msg', ''))
 
-class TernShowDocInPanel(sublime_plugin.TextCommand):
+class TernShowDocumentation(sublime_plugin.TextCommand):
     def run(self, args):
       view = self.view
       window = view.window()

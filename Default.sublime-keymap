@@ -1,7 +1,7 @@
 [
   {
     "keys": ["f9"],
-    "command": "tern_show_doc_in_panel",
+    "command": "tern_show_documentation",
     "context": [
       {
         "key": "selector",
