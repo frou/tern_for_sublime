@@ -287,7 +287,7 @@ def run_command(view, query, pos=None, fragments=True):
       data = make_request(port, doc)
       if data is None: return None
     except Exception as e:
-      sublime.error_message(str(e))
+      sublime.status_message("TERN ERROR: " + str(e))
 
   if sending_file: pfile.dirty = False
   return data
