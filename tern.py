@@ -450,7 +450,8 @@ def show_argument_hints(pfile, view):
   call_start, argpos = locate_call(view)
   if call_start is None: return render_argument_hints(pfile, view, None, 0)
   if pfile.cached_arguments is not None and pfile.cached_arguments[0] == call_start:
-    return render_argument_hints(pfile, view, pfile.cached_arguments[1], argpos)
+    render_argument_hints(pfile, view, pfile.cached_arguments[1], argpos)
+    return True
 
   data = run_command(view, {"type": "type", "preferFunction": True}, call_start)
   if data is not None:
@@ -460,8 +461,10 @@ def show_argument_hints(pfile, view):
       parsed['doc'] = data.get('doc', None)
       pfile.cached_arguments = (call_start, parsed)
       render_argument_hints(pfile, view, parsed, argpos)
-      return
+      return True
+
   sublime.status_message("TERN: CAN'T FIND DOCUMENTATION")
+  return False
 
 def render_argument_hints(pfile, view, ftype, argpos):
   if ftype is None:
@@ -516,7 +519,7 @@ def jump_stack_push(stack, view):
   if len(stack) > 32:
     stack.pop(0)
 
-# TODO(DH): Remove all 'hint' related stuff? It's a but intertwined with my TernShowDocumentation command. If I pick those apart, renderer.py can be deleted completely?
+# TODO(DH): Remove all 'hint' related stuff? It's a bit intertwined with my TernShowDocumentation command. If I pick those apart, renderer.py can be deleted completely?
 class TernArghintCommand(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     self.view.insert(edit, 0, args.get('msg', ''))
@@ -528,14 +531,11 @@ class TernShowDocumentation(sublime_plugin.TextCommand):
 
       panel_name = "output.tern_arghint"
 
-      # if window.active_panel() == panel_name:
-      #   window.run_command("hide_panel", {"panel": panel_name})
-      # else:
-
       pfile = get_pfile(view)
-      if pfile is not None:
-        show_argument_hints(pfile, view)
+      if pfile is not None and show_argument_hints(pfile, view):
         window.run_command("show_panel", {"panel": panel_name})
+      elif window.active_panel() == panel_name:
+        window.run_command("hide_panel", {"panel": panel_name})
 
 class TernJumpToDef(sublime_plugin.TextCommand):
   def run(self, edit, **args):
