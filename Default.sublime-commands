@@ -11,7 +11,10 @@
     "caption": "tern_for_sublime: Jump Forward",
     "command": "tern_jump_forward"
   },
-  // TODO(DH): Add entry for Show Documentation
+  {
+    "caption": "tern_for_sublime: Show Documentation",
+    "command": "tern_show_documentation"
+  },
   {
     "caption": "tern_for_sublime: Show Type",
     "command": "tern_show_type"
