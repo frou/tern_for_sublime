@@ -1,5 +1,2 @@
 {
-  // Do not merge Sublime's basic non-language-aware completions.
-  // TODO(DH): Rename (and invert usage) to: merge_stock_completions , default false
-  "tern_inhibit_word_completions": true
 }

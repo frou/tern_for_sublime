@@ -60,12 +60,7 @@ class Listeners(sublime_plugin.EventListener):
     if not fresh:
       completions = [c for c in completions if c[1].startswith(prefix)]
 
-    flags = 0;
-    # TODO(DH): This should be cached so it doesn't hit the settings file every time.
-    if get_setting("tern_inhibit_word_completions", False):
-      flags |= sublime.INHIBIT_WORD_COMPLETIONS
-
-    return (completions, flags)
+    return (completions, sublime.INHIBIT_WORD_COMPLETIONS)
 
 class ProjectFile(object):
   def __init__(self, name, view, project):
