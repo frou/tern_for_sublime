@@ -4,7 +4,7 @@ import sublime, sublime_plugin
 import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
 from subprocess import CalledProcessError
 
-from .renderer import create_renderer
+from .renderer import PanelRenderer
 
 import urllib.request, urllib.error
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -594,7 +594,7 @@ def plugin_loaded():
   else:
     default_output_style = "status"
   output_style = get_setting("tern_output_style", get_setting("tern_argument_hints_type", default_output_style))
-  renderer = create_renderer(output_style)
+  renderer = PanelRenderer()
   tern_arguments = get_setting("tern_arguments", [])
   if not isinstance(tern_arguments, list):
     tern_arguments = [tern_arguments]

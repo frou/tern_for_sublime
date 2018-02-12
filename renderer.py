@@ -6,12 +6,10 @@ import textwrap
 
 import sublime
 
-
 def format_doc(doc):
   """Format doc output for display in panel."""
 
   return textwrap.fill(doc, width=79)
-
 
 def get_message_from_ftype(ftype, argpos):
   msg = ftype["name"] + "("
@@ -27,97 +25,6 @@ def get_message_from_ftype(ftype, argpos):
   if ftype['doc'] is not None:
     msg += "\n\n" + format_doc(ftype['doc'])
   return msg
-
-def get_html_message_from_ftype(ftype, argpos):
-  style = '''
-    <style>
-      .hint-popup {
-        padding: 8px, 8px, 0px, 8px;
-      }
-      .hint-line-content {
-        padding-bottom: 8px;
-      }
-      .current-arg {
-        text-decoration: underline;
-      }
-      .type {
-        color: #60605a;
-      }
-      .doc {
-        margin-top: 8px;
-        font-family: sans-serif;
-      }
-      .doc-link {
-        font-family: sans-serif;
-      }
-    </style>
-  '''
-
-  func_signature = '('
-  i = 0
-  for name, type in ftype["args"]:
-    if i > 0: func_signature += ", "
-    if i == argpos:
-      func_signature += '<span class="arg-name current-arg">{name}</span>'.format(name=name)
-    else:
-      func_signature += '<span class="arg-name">{name}</span>'.format(name=name)
-    if type != "?":
-      func_signature += '<span class="type">: {type}</span>'.format(type=type)
-    i += 1
-  func_signature += ")"
-  if ftype["retval"] is not None:
-    func_signature += '<span class="type">: {type}</span>'.format(type=ftype["retval"])
-
-  template = '''
-    {style}
-    <div class="hint-popup">
-      <div class="hint-line func-signature">{func_signature}</div>
-      <div class="hint-line doc">{doc}</div>
-      <div class="hint-line doc-link">{doc_link}</div>
-    </div>
-  '''
-
-  doc = ftype['doc']
-  if doc: doc = doc.replace("\n", "<br>")
-
-  template_data = {
-    'style': style,
-    'func_signature': hint_line(func_signature),
-    'doc_link': hint_line(link(ftype['url'], 'More')),
-    'doc': hint_line(doc)
-  }
-
-  return template.format(**template_data)
-
-
-def maybe(fn):
-  def maybe_fn(arg, *args, **kwargs):
-    return fn(arg, *args, **kwargs) if arg else ''
-  return maybe_fn
-
-
-@maybe
-def link(url, linkText='{url}'):
-  """Returns a link HTML string.
-
-  The string is an &lt;a&gt; tag that links to the given url.
-  If linkText is not provided, the link text will be the url.
-  """
-
-  template = '<a href={url}>' + linkText + '</a>'
-  return template.format(url=url)
-
-
-@maybe
-def hint_line(txt):
-  return '<div class="hint-line-content">{txt}</div>'.format(txt=txt)
-
-
-def go_to_url(url=None):
-  if url:
-    import webbrowser
-    webbrowser.open(url)
-
 
 class RendererBase(object):
   """Class that renders Tern messages."""
@@ -157,32 +64,6 @@ class RendererBase(object):
     self._clean_impl(pfile, view)
     pfile.showing_arguments = False
 
-
-class TooltipRenderer(RendererBase):
-  """Class that renders Tern messages in a tooltip."""
-
-  def __init__(self):
-    self.useHTML = True  # Used in RendererBase
-
-  def _render_impl(self, pfile, view, message):
-    view.show_popup(message, sublime.COOPERATE_WITH_AUTO_COMPLETE,
-                    max_width=600, on_navigate=go_to_url)
-
-
-class StatusRenderer(RendererBase):
-  """Class that renders Tern messages in the status bar."""
-
-  def __init__(self):
-    self.useHTML = False
-
-  def _render_impl(self, pfile, view, message):
-    sublime.status_message(message.split('\n')[0])
-
-  def _clean_impl(self, pfile, view):
-    if pfile.showing_arguments:
-      sublime.status_message("")
-
-
 class PanelRenderer(RendererBase):
   """Class that renders Tern messages in a panel."""
 
@@ -198,17 +79,3 @@ class PanelRenderer(RendererBase):
     if pfile.showing_arguments:
       panel = view.window().get_output_panel("tern_arghint")
       panel.run_command("tern_arghint", {"msg": ""})
-
-
-def create_renderer(arghints_type):
-  """Create the correct renderer based on type.
-
-  Currently supported types are "tooltip", "status", and "panel".
-  """
-
-  if arghints_type == "tooltip":
-    return TooltipRenderer()
-  elif arghints_type == "status":
-    return StatusRenderer()
-  elif arghints_type == "panel":
-    return PanelRenderer()
