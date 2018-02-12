@@ -1,29 +1,26 @@
 [
-    {
-        "caption": "Preferences",
-        "id": "preferences",
-        "children":
-        [
-            {
-                "caption": "Package Settings",
-                "id": "package-settings",
-                "children":
-                [
-                    {
-                        "caption": "Tern",
-                        "children":
-                        [
-                            {
-                                "caption": "Key Bindings",
-                                "command": "open_file",
-                                "args": {
-                                    "file": "${packages}/tern_for_sublime/Default.sublime-keymap"
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
+  {
+    "caption": "Preferences",
+    "id": "preferences",
+    "children": [
+      {
+        "caption": "Package Settings",
+        "id": "package-settings",
+        "children": [
+          {
+            "caption": "Tern",
+            "children": [
+              {
+                "caption": "Key Bindings",
+                "command": "open_file",
+                "args": {
+                  "file": "${packages}/tern_for_sublime/Default.sublime-keymap"
+                }
+              }
+            ]
+          }
         ]
-    }
+      }
+    ]
+  }
 ]
