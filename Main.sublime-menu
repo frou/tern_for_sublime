@@ -46,24 +46,6 @@
                         "caption": "Tern",
                         "children":
                         [
-                            // TODO(DH): Find out how to open both settings files at same time.
-                            {
-                                "caption": "Settings – Default",
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/tern_for_sublime/tern_for_sublime.sublime-settings"
-                                }
-                            },
-                            {
-                                "caption": "Settings – User",
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/User/tern_for_sublime.sublime-settings"
-                                }
-                            },
-                            {
-                                "caption": "-"
-                            },
                             // TODO(DH): Find out how to open both keybindings files at same time.
                             {
                                 "caption": "Key Bindings – Default",

@@ -10,29 +10,21 @@ opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 import tempfile
 import textwrap
 
+tern_command = ["tern", "--no-port-file"]
+
 files = {}
 jump_back_stack = []
 jump_forward_stack = []
-
-tern_command = None
-tern_arguments = []
-
 documentation_panel_name = "tern_documentation"
 
 windows = platform.system() == "Windows"
 localhost = (windows and "127.0.0.1") or "localhost"
 
 def plugin_loaded():
-  global tern_command, tern_arguments
-
   if "show_popup" in dir(sublime.View):
     default_output_style = "tooltip"
   else:
     default_output_style = "status"
-  tern_arguments = get_setting("tern_arguments", [])
-  if not isinstance(tern_arguments, list):
-    tern_arguments = [tern_arguments]
-  tern_command = get_setting("tern_command", ["tern", "--no-port-file"])
 
 class Listeners(sublime_plugin.EventListener):
   def on_close(self, view):
@@ -151,18 +143,13 @@ def server_port(project, ignored=None):
   return (started, False)
 
 def start_server(project):
-  global tern_command
-  if not tern_command: return None
   if time.time() - project.last_failed < 30: return None
   env = None
   if platform.system() == "Darwin":
     env = os.environ.copy()
     env["PATH"] += ":/usr/local/bin"
 
-  if not isinstance(tern_command, list):
-    tern_command = [tern_command]
-
-  proc = subprocess.Popen(tern_command + tern_arguments, cwd=project.dir, env=env,
+  proc = subprocess.Popen(tern_command, cwd=project.dir, env=env,
                           stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT, shell=windows)
   output = ""
@@ -602,7 +589,3 @@ class TernShowType(sublime_plugin.TextCommand):
       return
     self.view.window().show_input_panel(
       "Type", data.get("type"), None, None, None)
-
-# fetch a certain setting from the package settings file
-def get_setting(key, default):
-  return sublime.load_settings("tern_for_sublime.sublime-settings").get(key, default)
