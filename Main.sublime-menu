@@ -1,4 +1,6 @@
 [
+    // TODO(DH): Remove the Tools entries (and all mnemonics?)
+
     {
         "id": "tools",
         "children":
@@ -44,6 +46,7 @@
                         "caption": "Tern",
                         "children":
                         [
+                            // TODO(DH): Find out how to open both settings files at same time.
                             {
                                 "caption": "Settings – Default",
                                 "command": "open_file", "args":
@@ -61,6 +64,7 @@
                             {
                                 "caption": "-"
                             },
+                            // TODO(DH): Find out how to open both keybindings files at same time.
                             {
                                 "caption": "Key Bindings – Default",
                                 "command": "open_file", "args":
