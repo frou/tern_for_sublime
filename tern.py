@@ -14,7 +14,6 @@ files = {}
 jump_back_stack = []
 jump_forward_stack = []
 
-arg_completion_enabled = False
 tern_command = None
 tern_arguments = []
 
@@ -25,8 +24,6 @@ localhost = (windows and "127.0.0.1") or "localhost"
 
 def plugin_loaded():
   global tern_command, tern_arguments
-  global arg_completion_enabled
-  arg_completion_enabled = get_setting("tern_argument_completion", False)
 
   if "show_popup" in dir(sublime.View):
     default_output_style = "tooltip"
@@ -411,11 +408,9 @@ def ensure_completions_cached(pfile, view):
         hint += "\t" + typ
 
       replacement = rec_name_escaped
-      if arg_completion_enabled:
-        placeholder_snippets = create_arg_str(arguments)
-        replacement += placeholder_snippets
-      else:
-        replacement += "($1)"
+
+      placeholder_snippets = create_arg_str(arguments)
+      replacement += placeholder_snippets
 
       completions.append((hint, replacement))
 
