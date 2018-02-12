@@ -10,16 +10,38 @@ opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 import tempfile
 import textwrap
 
-windows = platform.system() == "Windows"
-
-def is_js_file(view):
-  return len(view.sel()) > 0 and view.score_selector(sel_end(view.sel()[0]), "source.js") > 0
-
 files = {}
+jump_back_stack = []
+jump_forward_stack = []
+
 arg_completion_enabled = False
 tern_command = None
 tern_arguments = []
+
 documentation_panel_name = "tern_documentation"
+
+windows = platform.system() == "Windows"
+localhost = (windows and "127.0.0.1") or "localhost"
+
+def plugin_loaded():
+  global tern_command, tern_arguments
+  global arg_completion_enabled
+  arg_completion_enabled = get_setting("tern_argument_completion", False)
+
+  if "show_popup" in dir(sublime.View):
+    default_output_style = "tooltip"
+  else:
+    default_output_style = "status"
+  tern_arguments = get_setting("tern_arguments", [])
+  if not isinstance(tern_arguments, list):
+    tern_arguments = [tern_arguments]
+  tern_command = get_setting("tern_command", ["tern", "--no-port-file"])
+
+def cleanup():
+  for f in files.values():
+    kill_server(f.project)
+# TODO(DH): The server exits after 5min inactivity anyway, so unncessary?
+atexit.register(cleanup)
 
 class Listeners(sublime_plugin.EventListener):
   def on_close(self, view):
@@ -48,6 +70,7 @@ class Listeners(sublime_plugin.EventListener):
       completions = [c for c in completions if c[1].startswith(prefix)]
 
     flags = 0;
+    # TODO(DH): This should be cached so it doesn't hit the settings file every time.
     if get_setting("tern_inhibit_word_completions", False):
       flags |= sublime.INHIBIT_WORD_COMPLETIONS
 
@@ -71,6 +94,9 @@ class Project(object):
 
   def __del__(self):
     kill_server(self)
+
+def is_js_file(view):
+  return len(view.sel()) > 0 and view.score_selector(sel_end(view.sel()[0]), "source.js") > 0
 
 def get_pfile(view):
   if not is_js_file(view): return None
@@ -215,8 +241,6 @@ def sel_start(sel):
   return min(sel.a, sel.b)
 def sel_end(sel):
   return max(sel.a, sel.b)
-
-localhost = (windows and "127.0.0.1") or "localhost"
 
 def make_request(port, doc):
   req = opener.open("http://" + localhost + ":" + str(port) + "/", json.dumps(doc).encode("utf-8"), 1)
@@ -522,9 +546,6 @@ def parse_function_type(data):
           "args": args,
           "retval": retval}
 
-jump_back_stack = []
-jump_forward_stack = []
-
 def encode_current_position(view):
   row, col = view.rowcol(view.sel()[0].begin())
   return view.file_name() + ":" + str(row + 1) + ":" + str(col + 1)
@@ -601,23 +622,3 @@ class TernShowType(sublime_plugin.TextCommand):
 # fetch a certain setting from the package settings file
 def get_setting(key, default):
   return sublime.load_settings("tern_for_sublime.sublime-settings").get(key, default)
-
-def plugin_loaded():
-  global tern_command, tern_arguments
-  global arg_completion_enabled
-  arg_completion_enabled = get_setting("tern_argument_completion", False)
-
-  if "show_popup" in dir(sublime.View):
-    default_output_style = "tooltip"
-  else:
-    default_output_style = "status"
-  tern_arguments = get_setting("tern_arguments", [])
-  if not isinstance(tern_arguments, list):
-    tern_arguments = [tern_arguments]
-  tern_command = get_setting("tern_command", ["tern", "--no-port-file"])
-
-def cleanup():
-  for f in files.values():
-    kill_server(f.project)
-
-atexit.register(cleanup)
