@@ -20,12 +20,6 @@ documentation_panel_name = "tern_documentation"
 windows = platform.system() == "Windows"
 localhost = (windows and "127.0.0.1") or "localhost"
 
-def plugin_loaded():
-  if "show_popup" in dir(sublime.View):
-    default_output_style = "tooltip"
-  else:
-    default_output_style = "status"
-
 class Listeners(sublime_plugin.EventListener):
   def on_close(self, view):
     files.pop(view.file_name(), None)
