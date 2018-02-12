@@ -4,12 +4,11 @@ import sublime, sublime_plugin
 import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
 from subprocess import CalledProcessError
 
-from .renderer import PanelRenderer
-
 import urllib.request, urllib.error
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 import tempfile
+import textwrap
 
 windows = platform.system() == "Windows"
 
@@ -17,11 +16,10 @@ def is_js_file(view):
   return len(view.sel()) > 0 and view.score_selector(sel_end(view.sel()[0]), "source.js") > 0
 
 files = {}
-arghints_enabled = False
-renderer = None
 arg_completion_enabled = False
 tern_command = None
 tern_arguments = []
+documentation_panel_name = "tern_documentation"
 
 class Listeners(sublime_plugin.EventListener):
   def on_close(self, view):
@@ -35,11 +33,6 @@ class Listeners(sublime_plugin.EventListener):
   def on_modified(self, view):
     pfile = files.get(view.file_name(), None)
     if pfile: pfile_modified(pfile, view)
-
-  # def on_selection_modified_async(self, view):
-  #   if not arghints_enabled: return
-  #   pfile = get_pfile(view)
-  #   if pfile is not None: show_argument_hints(pfile, view)
 
   def on_query_completions(self, view, prefix, _locations):
     sel = sel_start(view.sel()[0])
@@ -67,7 +60,6 @@ class ProjectFile(object):
     self.dirty = view.is_dirty()
     self.cached_completions = None
     self.cached_arguments = None
-    self.showing_arguments = False
     self.last_modified = 0
 
 class Project(object):
@@ -446,11 +438,11 @@ def locate_call(view):
 
   return retval
 
-def show_argument_hints(pfile, view):
+def prepare_documentation(pfile, view):
   call_start, argpos = locate_call(view)
-  if call_start is None: return render_argument_hints(pfile, view, None, 0)
+  if call_start is None: return render_documentation(pfile, view, None, 0)
   if pfile.cached_arguments is not None and pfile.cached_arguments[0] == call_start:
-    render_argument_hints(pfile, view, pfile.cached_arguments[1], argpos)
+    render_documentation(pfile, view, pfile.cached_arguments[1], argpos)
     return True
 
   data = run_command(view, {"type": "type", "preferFunction": True}, call_start)
@@ -460,17 +452,43 @@ def show_argument_hints(pfile, view):
       parsed['url'] = data.get('url', None)
       parsed['doc'] = data.get('doc', None)
       pfile.cached_arguments = (call_start, parsed)
-      render_argument_hints(pfile, view, parsed, argpos)
+      render_documentation(pfile, view, parsed, argpos)
       return True
 
   sublime.status_message("TERN: CAN'T FIND DOCUMENTATION")
   return False
 
-def render_argument_hints(pfile, view, ftype, argpos):
+def get_documentation_panel(window):
+  return window.get_output_panel(documentation_panel_name)
+
+def get_message_from_ftype(ftype, argpos):
+  msg = ftype["name"] + "("
+  i = 0
+  for name, type in ftype["args"]:
+    if i > 0: msg += ", "
+    if i == argpos: msg += "*"
+    msg += name + ("" if type == "?" else ": " + type)
+    i += 1
+  msg += ")"
+  if ftype["retval"] is not None:
+    msg += " -> " + ftype["retval"]
+  if ftype['doc'] is not None:
+    msg += "\n\n" + textwrap.fill(ftype['doc'], width=79)
+  return msg
+
+def render_documentation(pfile, view, ftype, argpos):
+  panel = get_documentation_panel(view.window())
+
   if ftype is None:
-    renderer.clean(pfile, view)
+    panel.run_command(
+      "tern_insert_documentation",
+      {"msg": ""}
+    )
   else:
-    renderer.render_arghints(pfile, view, ftype, argpos)
+    panel.run_command(
+      "tern_insert_documentation",
+      {"msg": get_message_from_ftype(ftype, argpos)}
+    )
 
 def parse_function_type(data):
   type = data["type"]
@@ -519,8 +537,7 @@ def jump_stack_push(stack, view):
   if len(stack) > 32:
     stack.pop(0)
 
-# TODO(DH): Remove all 'hint' related stuff? It's a bit intertwined with my TernShowDocumentation command. If I pick those apart, renderer.py can be deleted completely?
-class TernArghintCommand(sublime_plugin.TextCommand):
+class TernInsertDocumentation(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     self.view.insert(edit, 0, args.get('msg', ''))
 
@@ -529,13 +546,15 @@ class TernShowDocumentation(sublime_plugin.TextCommand):
       view = self.view
       window = view.window()
 
-      panel_name = "output.tern_arghint"
-
       pfile = get_pfile(view)
-      if pfile is not None and show_argument_hints(pfile, view):
-        window.run_command("show_panel", {"panel": panel_name})
-      elif window.active_panel() == panel_name:
-        window.run_command("hide_panel", {"panel": panel_name})
+      documentation_panel_full_name = "output.%s" % documentation_panel_name
+
+
+
+      if pfile is not None and prepare_documentation(pfile, view):
+        window.run_command("show_panel", {"panel": documentation_panel_full_name})
+      elif window.active_panel() == documentation_panel_full_name:
+        window.run_command("hide_panel", {"panel": documentation_panel_full_name})
 
 class TernJumpToDef(sublime_plugin.TextCommand):
   def run(self, edit, **args):
@@ -584,17 +603,14 @@ def get_setting(key, default):
   return sublime.load_settings("tern_for_sublime.sublime-settings").get(key, default)
 
 def plugin_loaded():
-  global arghints_enabled, renderer, tern_command, tern_arguments
+  global tern_command, tern_arguments
   global arg_completion_enabled
-  arghints_enabled = get_setting("tern_argument_hints", False)
   arg_completion_enabled = get_setting("tern_argument_completion", False)
 
   if "show_popup" in dir(sublime.View):
     default_output_style = "tooltip"
   else:
     default_output_style = "status"
-  output_style = get_setting("tern_output_style", get_setting("tern_argument_hints_type", default_output_style))
-  renderer = PanelRenderer()
   tern_arguments = get_setting("tern_arguments", [])
   if not isinstance(tern_arguments, list):
     tern_arguments = [tern_arguments]

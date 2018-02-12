@@ -1,11 +1,9 @@
 {
-  // Don't show inline docs in a tooltip
-  "tern_argument_hints": true,
-  "tern_output_style": "panel",
-
   // When a function completion is selected, insert snippets to tab between placeholder arguments.
+  // TODO(DH): Rename to: insert_argument_snippets , default true
   "tern_argument_completion": true,
 
   // Do not merge Sublime's basic non-language-aware completions.
+  // TODO(DH): Rename (and invert usage) to: merge_stock_completions , default false
   "tern_inhibit_word_completions": true
 }
