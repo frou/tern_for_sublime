@@ -13,19 +13,11 @@
                         "caption": "Tern",
                         "children":
                         [
-                            // TODO(DH): Find out how to open both keybindings files at same time.
                             {
-                                "caption": "Key Bindings – Default",
-                                "command": "open_file", "args":
-                                {
+                                "caption": "Key Bindings",
+                                "command": "open_file",
+                                "args": {
                                     "file": "${packages}/tern_for_sublime/Default.sublime-keymap"
-                                }
-                            },
-                            {
-                                "caption": "Key Bindings – User",
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/User/tern_for_sublime.sublime-keymap"
                                 }
                             }
                         ]
