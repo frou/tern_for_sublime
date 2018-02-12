@@ -37,12 +37,6 @@ def plugin_loaded():
     tern_arguments = [tern_arguments]
   tern_command = get_setting("tern_command", ["tern", "--no-port-file"])
 
-def cleanup():
-  for f in files.values():
-    kill_server(f.project)
-# TODO(DH): The server exits after 5min inactivity anyway, so unncessary?
-atexit.register(cleanup)
-
 class Listeners(sublime_plugin.EventListener):
   def on_close(self, view):
     files.pop(view.file_name(), None)
