@@ -15,20 +15,28 @@ opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 windows = platform.system() == "Windows"
 localhost = (windows and "127.0.0.1") or "localhost"
 
-class Listeners(sublime_plugin.EventListener):
-  def on_close(self, view):
+class Listeners(sublime_plugin.ViewEventListener):
+  @classmethod
+  def is_applicable(cls, settings):
+    return settings_indicate_js(settings)
+
+  def on_close(self):
+    view = self.view
     files.pop(view.file_name(), None)
 
-  def on_deactivated_async(self, view):
+  def on_deactivated_async(self):
+    view = self.view
     pfile = files.get(view.file_name(), None)
     if pfile and pfile.dirty:
       send_buffer(pfile, view)
 
-  def on_modified(self, view):
+  def on_modified(self):
+    view = self.view
     pfile = files.get(view.file_name(), None)
     if pfile: pfile_modified(pfile, view)
 
-  def on_query_completions(self, view, prefix, _locations):
+  def on_query_completions(self, prefix, locations):
+    view = self.view
     sel = sel_start(view.sel()[0])
     if view.score_selector(sel, 'comment') > 0: return None
 
@@ -62,11 +70,11 @@ class Project(object):
   def __del__(self):
     kill_server(self)
 
-def is_js_file(view):
-  return len(view.sel()) > 0 and view.score_selector(sel_end(view.sel()[0]), "source.js") > 0
+def settings_indicate_js(view_settings):
+  return view_settings.get("syntax") == "Packages/JavaScript/JavaScript.sublime-syntax"
 
 def get_pfile(view):
-  if not is_js_file(view): return None
+  if not settings_indicate_js(view.settings()): return None
   fname = view.file_name()
   if fname is None:
     fname = os.path.join(tempfile.gettempdir(), "tfs_%s" % time.time())
