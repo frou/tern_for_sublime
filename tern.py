@@ -1,14 +1,7 @@
-# Sublime Text plugin for Tern
-
 import sublime, sublime_plugin
 import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
-from subprocess import CalledProcessError
-
+import tempfile, textwrap
 import urllib.request, urllib.error
-opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-
-import tempfile
-import textwrap
 
 tern_command = ["tern", "--no-port-file"]
 
@@ -16,6 +9,8 @@ files = {}
 jump_back_stack = []
 jump_forward_stack = []
 documentation_panel_name = "tern_documentation"
+
+opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 windows = platform.system() == "Windows"
 localhost = (windows and "127.0.0.1") or "localhost"
@@ -206,6 +201,7 @@ def count_indentation(line):
 
 def sel_start(sel):
   return min(sel.a, sel.b)
+
 def sel_end(sel):
   return max(sel.a, sel.b)
 
@@ -528,19 +524,17 @@ class TernInsertDocumentation(sublime_plugin.TextCommand):
     self.view.insert(edit, 0, args.get('msg', ''))
 
 class TernShowDocumentation(sublime_plugin.TextCommand):
-    def run(self, args):
-      view = self.view
-      window = view.window()
+  def run(self, args):
+    view = self.view
+    window = view.window()
 
-      pfile = get_pfile(view)
-      documentation_panel_full_name = "output.%s" % documentation_panel_name
+    pfile = get_pfile(view)
+    documentation_panel_full_name = "output.%s" % documentation_panel_name
 
-
-
-      if pfile is not None and prepare_documentation(pfile, view):
-        window.run_command("show_panel", {"panel": documentation_panel_full_name})
-      elif window.active_panel() == documentation_panel_full_name:
-        window.run_command("hide_panel", {"panel": documentation_panel_full_name})
+    if pfile is not None and prepare_documentation(pfile, view):
+      window.run_command("show_panel", {"panel": documentation_panel_full_name})
+    elif window.active_panel() == documentation_panel_full_name:
+      window.run_command("hide_panel", {"panel": documentation_panel_full_name})
 
 class TernJumpToDef(sublime_plugin.TextCommand):
   def run(self, edit, **args):
