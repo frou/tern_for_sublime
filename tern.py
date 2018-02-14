@@ -3,6 +3,8 @@ import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
 import tempfile, textwrap
 import urllib.request, urllib.error
 
+# TODO(DH): Revise buffer_fragment(...) and view_js_text(...) to just consider the whole view every time rather than looking for embedded JS regions?
+
 tern_command = ["tern", "--no-port-file"]
 
 files = {}
@@ -38,7 +40,6 @@ class Listeners(sublime_plugin.ViewEventListener):
   def on_query_completions(self, prefix, locations):
     view = self.view
     sel = sel_start(view.sel()[0])
-    if view.score_selector(sel, 'comment') > 0: return None
 
     pfile = get_pfile(view)
     if pfile is None: return None
