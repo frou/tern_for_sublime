@@ -313,12 +313,27 @@ def create_arg_str(arguments):
     # interactions to deal with the argument list. i.e. no matter the number of
     # arguments, at least one tab press is required to advance beyond it.
     return "${1:()}"
+
   arg_str = ""
-  k = 1
+  snippet_idx = 1
+
   for argument in arguments:
-    arg_str += "${" + str(k) + ":" + argument.replace("$", "\\$") + "}, "
-    k += 1
-  arg_str = arg_str[0:-2] # truncate trailing separator
+    # $ is a valid character in JS identifiers, but needs escaped when used in
+    # a Sublime snippet.
+    argument = argument.replace("$", "\\$")
+
+    pre_sep = ""
+    if snippet_idx > 1:
+      pre_sep = ", "
+
+    if argument.endswith("?"): # optional argument?
+      snippet_idx_inner = snippet_idx + 1
+      arg_str += "${%d:%s${%d:%s}}" % (snippet_idx, pre_sep, snippet_idx_inner, argument)
+      snippet_idx += 2
+    else:
+      arg_str += "%s${%d:%s}" % (pre_sep, snippet_idx, argument)
+      snippet_idx += 1
+
   return "(" + arg_str + ")"
 
 # parse the type to get the arguments
