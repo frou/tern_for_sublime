@@ -3,8 +3,6 @@ import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
 import tempfile, textwrap
 import urllib.request, urllib.error
 
-# TODO(DH): Revise buffer_fragment(...) and view_js_text(...) to just consider the whole view every time rather than looking for embedded JS regions?
-
 tern_command = ["tern", "--no-port-file"]
 
 files = {}
@@ -174,30 +172,6 @@ def kill_server(project):
 def relative_file(pfile):
   return pfile.name[len(pfile.project.dir) + 1:]
 
-def buffer_fragment(view, pos):
-  region = None
-  for js_region in view.find_by_selector("source.js"):
-    if js_region.a <= pos and js_region.b >= pos:
-      region = js_region
-      break
-  if region is None: return sublime.Region(pos, pos)
-
-  start = view.line(max(region.a, pos - 1000)).a
-  if start < pos - 1500: start = pos - 1500
-  cur = start
-  min_indent = 10000
-  while True:
-    next = view.find("\\bfunction\\b", cur)
-    if next is None or next.b > pos or (next.a == -1 and next.b == -1): break
-    line = view.line(next.a)
-    if line.a < pos - 1500: line = sublime.Region(pos - 1500, line.b)
-    indent = count_indentation(view.substr(line))
-    if indent < min_indent:
-      min_indent = indent
-      start = line.a
-    cur = line.b
-  return sublime.Region(start, min(pos + 500, region.b))
-
 def count_indentation(line):
   count, pos = (0, 0)
   while pos < len(line):
@@ -218,15 +192,10 @@ def make_request(port, doc):
   req = opener.open("http://" + localhost + ":" + str(port) + "/", json.dumps(doc).encode("utf-8"), 1)
   return json.loads(req.read().decode("utf-8"))
 
-def view_js_text(view):
-  text, pos = ("", 0)
-  for region in view.find_by_selector("source.js"):
-    if region.a > pos: text += ";" + re.sub(r'[^\n]', " ", view.substr(sublime.Region(pos + 1, region.a)))
-    text += view.substr(region)
-    pos = region.b
-  return text
+def view_full_text(view):
+  return view.substr(sublime.Region(0, view.size()))
 
-def run_command(view, query, pos=None, fragments=True):
+def run_command(view, query, pos=None):
   """Run the query on the Tern server.
 
   See default queries at http://ternjs.net/doc/manual.html#protocol.
@@ -245,19 +214,11 @@ def run_command(view, query, pos=None, fragments=True):
 
   if not pfile.dirty:
     fname, sending_file = (relative_file(pfile), False)
-  if fragments and view.size() > 8000:
-    region = buffer_fragment(view, pos)
-    doc["files"].append({"type": "part",
-                         "name": relative_file(pfile),
-                         "offset": region.a,
-                         "text": view.substr(region)})
-    pos -= region.a
-    fname, sending_file = ("#0", False)
-  else:
-    doc["files"].append({"type": "full",
-                         "name": relative_file(pfile),
-                         "text": view_js_text(view)})
-    fname, sending_file = ("#0", True)
+
+  doc["files"].append({"type": "full",
+                       "name": relative_file(pfile),
+                       "text": view_full_text(view)})
+  fname, sending_file = ("#0", True)
   query["file"] = fname
   query["end"] = pos
 
@@ -287,7 +248,7 @@ def send_buffer(pfile, view):
     make_request(port,
                  {"files": [{"type": "full",
                              "name": relative_file(pfile),
-                             "text": view_js_text(view)}]}
+                             "text": view_full_text(view)}]}
     )
     pfile.dirty = False
     return True
