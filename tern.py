@@ -536,10 +536,13 @@ class TernJumpToDef(sublime_plugin.TextCommand):
       sublime.active_window().open_file(real_file, sublime.ENCODED_POSITION)
     else:
       url = data.get("url", None)
+      msg = "Could not find a definition"
       if url is None:
-        sublime.error_message("Could not find a definition")
+        sublime.error_message(msg)
       else:
-        webbrowser.open(url)
+        msg += ", but documentation is available on the web. Open it in browser?"
+        if sublime.ok_cancel_dialog(msg):
+          webbrowser.open(url)
 
 class TernJumpBack(sublime_plugin.TextCommand):
   def run(self, edit, **args):
