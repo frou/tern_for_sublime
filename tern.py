@@ -409,30 +409,32 @@ def locate_call(view):
   return retval
 
 def prepare_documentation(pfile, view):
+  doc_url = None
+
   call_start, argpos = locate_call(view)
-  if call_start is None: return render_documentation(pfile, view, None, 0)
+  if call_start is None:
+    return (render_documentation(pfile, view, None, 0), doc_url)
+
   if pfile.cached_arguments is not None and pfile.cached_arguments[0] == call_start:
-    render_documentation(pfile, view, pfile.cached_arguments[1], argpos)
-    return True
+    parsed = pfile.cached_arguments[1]
+    doc_url = parsed["url"]
+    render_documentation(pfile, view, parsed, argpos)
+    return (True, doc_url)
 
   data = run_command(view, {"type": "type", "preferFunction": True}, call_start)
   if data is not None:
     parsed = parse_function_type(data)
-    parsed_ok = parsed != None
+    doc_url = data.get('url', None)
 
-    if not parsed_ok:
-      parsed = {}
-
-    parsed['url'] = data.get('url', None)
-    parsed['doc'] = data.get('doc', None)
-    pfile.cached_arguments = (call_start, parsed)
-
-    if parsed_ok:
+    if parsed is not None:
+      parsed['url'] = doc_url
+      parsed['doc'] = data.get('doc', None)
+      pfile.cached_arguments = (call_start, parsed)
       render_documentation(pfile, view, parsed, argpos)
-      return True
+      return (True, doc_url)
 
   sublime.status_message("TERN: CAN'T FIND DOCUMENTATION")
-  return False
+  return (False, doc_url)
 
 def get_documentation_panel(window):
   return window.get_output_panel(documentation_panel_name)
@@ -525,17 +527,17 @@ class TernShowDocumentation(sublime_plugin.TextCommand):
 
     documentation_panel_full_name = "output.%s" % documentation_panel_name
 
-    if prepare_documentation(pfile, view):
+    (ok, doc_url) = prepare_documentation(pfile, view)
+    if ok:
       window.run_command("show_panel", {"panel": documentation_panel_full_name})
     else:
-      url = pfile.cached_arguments[1]["url"]
       msg = "Could not find documentation text"
-      if url is None:
+      if doc_url is None:
         sublime.status_message("TERN: " + msg.upper())
       else:
         msg += ", but documentation is available on the web. Open it in browser?"
         if sublime.ok_cancel_dialog(msg):
-          webbrowser.open(url)
+          webbrowser.open(doc_url)
 
 # TODO(DH): Can the uses of open_file(...) be replaced with something that will make entries in the native Sublime jump-position-stack and thus negate the need for custom key bindings just for JS? Is it a bug that open_file(...) is not already doing that?
 
