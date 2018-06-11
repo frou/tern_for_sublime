@@ -521,6 +521,8 @@ class TernShowDocumentation(sublime_plugin.TextCommand):
     elif window.active_panel() == documentation_panel_full_name:
       window.run_command("hide_panel", {"panel": documentation_panel_full_name})
 
+# TODO(DH): Can the uses of open_file(...) be replaced with something that will make entries in the native Sublime jump-position-stack and thus negate the need for custom key bindings just for JS?
+
 class TernJumpToDef(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     data = run_command(self.view, {"type": "definition", "lineCharPositions": True})
