@@ -418,10 +418,16 @@ def prepare_documentation(pfile, view):
   data = run_command(view, {"type": "type", "preferFunction": True}, call_start)
   if data is not None:
     parsed = parse_function_type(data)
-    if parsed is not None:
-      parsed['url'] = data.get('url', None)
-      parsed['doc'] = data.get('doc', None)
-      pfile.cached_arguments = (call_start, parsed)
+    parsed_ok = parsed != None
+
+    if not parsed_ok:
+      parsed = {}
+
+    parsed['url'] = data.get('url', None)
+    parsed['doc'] = data.get('doc', None)
+    pfile.cached_arguments = (call_start, parsed)
+
+    if parsed_ok:
       render_documentation(pfile, view, parsed, argpos)
       return True
 
@@ -514,35 +520,42 @@ class TernShowDocumentation(sublime_plugin.TextCommand):
     window = view.window()
 
     pfile = get_pfile(view)
+    if not pfile:
+      return
+
     documentation_panel_full_name = "output.%s" % documentation_panel_name
 
-    if pfile is not None and prepare_documentation(pfile, view):
+    if prepare_documentation(pfile, view):
       window.run_command("show_panel", {"panel": documentation_panel_full_name})
-    elif window.active_panel() == documentation_panel_full_name:
-      window.run_command("hide_panel", {"panel": documentation_panel_full_name})
+    else:
+      url = pfile.cached_arguments[1]["url"]
+      msg = "Could not find documentation text"
+      if url is None:
+        sublime.status_message("TERN: " + msg.upper())
+      else:
+        msg += ", but documentation is available on the web. Open it in browser?"
+        if sublime.ok_cancel_dialog(msg):
+          webbrowser.open(url)
 
 # TODO(DH): Can the uses of open_file(...) be replaced with something that will make entries in the native Sublime jump-position-stack and thus negate the need for custom key bindings just for JS? Is it a bug that open_file(...) is not already doing that?
 
 class TernJumpToDef(sublime_plugin.TextCommand):
   def run(self, edit, **args):
     data = run_command(self.view, {"type": "definition", "lineCharPositions": True})
-    if data is None: return
+    if data is None:
+      return
+
     file = data.get("file", None)
-    if file is not None:
-      jump_stack_push(jump_back_stack, self.view)
-      jump_forward_stack.clear()
-      real_file = (os.path.join(get_pfile(self.view).project.dir, file) +
-        ":" + str(data["start"]["line"] + 1) + ":" + str(data["start"]["ch"] + 1))
-      sublime.active_window().open_file(real_file, sublime.ENCODED_POSITION)
-    else:
-      url = data.get("url", None)
-      msg = "Could not find a definition"
-      if url is None:
-        sublime.error_message(msg)
-      else:
-        msg += ", but documentation is available on the web. Open it in browser?"
-        if sublime.ok_cancel_dialog(msg):
-          webbrowser.open(url)
+    if not file:
+      sublime.status_message("TERN: COULD NOT FIND DEFINITION")
+      return
+
+    jump_stack_push(jump_back_stack, self.view)
+    jump_forward_stack.clear()
+    real_file = (os.path.join(get_pfile(self.view).project.dir, file) +
+      ":" + str(data["start"]["line"] + 1) + ":" + str(data["start"]["ch"] + 1))
+    sublime.active_window().open_file(real_file, sublime.ENCODED_POSITION)
+
 
 class TernJumpBack(sublime_plugin.TextCommand):
   def run(self, edit, **args):
