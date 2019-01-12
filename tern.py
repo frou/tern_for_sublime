@@ -539,7 +539,7 @@ class TernShowDocumentation(sublime_plugin.TextCommand):
         if sublime.ok_cancel_dialog(msg):
           webbrowser.open(doc_url)
 
-# TODO(DH): Can the uses of open_file(...) be replaced with something that will make entries in the native Sublime jump-position-stack and thus negate the need for custom key bindings just for JS? Is it a bug that open_file(...) is not already doing that?
+# TODO(DH): Can the uses of open_file(...) be replaced with something that will make entries in the native Sublime jump-position-stack and thus negate the need for custom key bindings just for JS? Is it a bug that open_file(...) is not already doing that? Any help? : https://github.com/tomv564/LSP/pull/491/files
 
 class TernJumpToDef(sublime_plugin.TextCommand):
   def run(self, edit, **args):
