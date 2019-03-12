@@ -3,6 +3,8 @@ import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
 import tempfile, textwrap
 import urllib.request, urllib.error
 
+# http://ternjs.net/doc/manual.html
+
 tern_command = ["tern", "--no-port-file"]
 
 files = {}
