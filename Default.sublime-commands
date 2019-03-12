@@ -4,14 +4,6 @@
     "command": "tern_jump_to_def"
   },
   {
-    "caption": "tern_for_sublime: Jump Back",
-    "command": "tern_jump_back"
-  },
-  {
-    "caption": "tern_for_sublime: Jump Forward",
-    "command": "tern_jump_forward"
-  },
-  {
     "caption": "tern_for_sublime: Show Documentation",
     "command": "tern_show_documentation"
   },

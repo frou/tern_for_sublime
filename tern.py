@@ -1,4 +1,6 @@
 import sublime, sublime_plugin
+from Default.history_list import get_jump_history_for_view
+
 import os, sys, platform, subprocess, webbrowser, json, re, time, atexit
 import tempfile, textwrap
 import urllib.request, urllib.error
@@ -8,8 +10,6 @@ import urllib.request, urllib.error
 tern_command = ["tern", "--no-port-file"]
 
 files = {}
-jump_back_stack = []
-jump_forward_stack = []
 documentation_panel_name = "tern_documentation"
 
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -618,15 +618,6 @@ def encode_current_position(view):
     return view.file_name() + ":" + str(row + 1) + ":" + str(col + 1)
 
 
-def jump_stack_push(stack, view):
-    row, col = view.rowcol(view.sel()[0].begin())
-    encoded_pos = view.file_name() + ":" + str(row + 1) + ":" + str(col + 1)
-    stack.append(encoded_pos)
-    # print(stack)
-    if len(stack) > 32:
-        stack.pop(0)
-
-
 class TernInsertDocumentation(sublime_plugin.TextCommand):
     def run(self, edit, **args):
         self.view.insert(edit, 0, args.get("msg", ""))
@@ -658,9 +649,6 @@ class TernShowDocumentation(sublime_plugin.TextCommand):
                     webbrowser.open(doc_url)
 
 
-# TODO(DH): Can the uses of open_file(...) be replaced with something that will make entries in the native Sublime jump-position-stack and thus negate the need for custom key bindings just for JS? Is it a bug that open_file(...) is not already doing that? Any help? : https://github.com/tomv564/LSP/pull/491/files
-
-
 class TernJumpToDef(sublime_plugin.TextCommand):
     def run(self, edit, **args):
         data = run_command(
@@ -674,8 +662,8 @@ class TernJumpToDef(sublime_plugin.TextCommand):
             sublime.status_message("TERN: COULD NOT FIND DEFINITION")
             return
 
-        jump_stack_push(jump_back_stack, self.view)
-        jump_forward_stack.clear()
+        get_jump_history_for_view(self.view).push_selection(self.view)
+
         real_file = (
             os.path.join(get_pfile(self.view).project.dir, file)
             + ":"
@@ -684,28 +672,6 @@ class TernJumpToDef(sublime_plugin.TextCommand):
             + str(data["start"]["ch"] + 1)
         )
         sublime.active_window().open_file(real_file, sublime.ENCODED_POSITION)
-
-
-class TernJumpBack(sublime_plugin.TextCommand):
-    def run(self, edit, **args):
-        if len(jump_back_stack) > 0:
-            jump_stack_push(jump_forward_stack, self.view)
-            sublime.active_window().open_file(
-                jump_back_stack.pop(), sublime.ENCODED_POSITION
-            )
-        else:
-            sublime.status_message("TERN: NO EARLIER POSITION TO GO BACK TO")
-
-
-class TernJumpForward(sublime_plugin.TextCommand):
-    def run(self, edit, **args):
-        if len(jump_forward_stack) > 0:
-            jump_stack_push(jump_back_stack, self.view)
-            sublime.active_window().open_file(
-                jump_forward_stack.pop(), sublime.ENCODED_POSITION
-            )
-        else:
-            sublime.status_message("TERN: NO LATER POSITION TO GO FORWARD TO")
 
 
 class TernShowType(sublime_plugin.TextCommand):

@@ -1,8 +1,5 @@
 [
   {"keys": ["f9"],        "command": "tern_show_documentation", "context": [{"key": "selector", "operator": "equal", "operand": "source.js"}]},
   {"keys": ["shift+f9"],  "command": "tern_show_type",          "context": [{"key": "selector", "operator": "equal", "operand": "source.js"}]},
-
-  {"keys": ["f10"],       "command": "tern_jump_back",          "context": [{"key": "selector", "operator": "equal", "operand": "source.js"}]},
   {"keys": ["f11"],       "command": "tern_jump_to_def",        "context": [{"key": "selector", "operator": "equal", "operand": "source.js"}]},
-  {"keys": ["f12"],       "command": "tern_jump_forward",       "context": [{"key": "selector", "operator": "equal", "operand": "source.js"}]}
 ]
