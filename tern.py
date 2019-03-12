@@ -679,6 +679,4 @@ class TernShowType(sublime_plugin.TextCommand):
         data = run_command(self.view, {"type": "documentation"})
         if data is None:
             return
-        self.view.window().show_input_panel(
-            "Type", data.get("type"), None, None, None
-        )
+        sublime.message_dialog(data.get("type"))
