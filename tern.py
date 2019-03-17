@@ -7,6 +7,8 @@ import urllib.request, urllib.error
 
 # http://ternjs.net/doc/manual.html
 
+# The Emacs version is likely more comprehensible: https://github.com/ternjs/tern/tree/master/emacs
+
 tern_command = ["tern", "--no-port-file"]
 
 files = {}
