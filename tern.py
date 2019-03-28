@@ -9,6 +9,8 @@ import urllib.request, urllib.error
 
 # The Emacs version is likely more comprehensible: https://github.com/ternjs/tern/tree/master/emacs
 
+# TODO: Make the completions async to improve usability. See https://github.com/nsf/gocode/pull/531#issuecomment-445950433 and any similar work I do on GoFeather
+
 tern_command = ["tern", "--no-port-file"]
 
 files = {}
